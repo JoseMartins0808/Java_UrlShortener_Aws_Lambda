@@ -23,6 +23,8 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
             bodyMap = objectMapper.readValue(body, Map.class);
 
+            System.out.println(bodyMap);
+
         }catch(Exception exception) {
 
             throw new RuntimeException("Error parsing JSON body: " + exception.getMessage(), exception);
