@@ -7,3 +7,5 @@ Os usuários poderão criar URL encurtadas que redirecionem para a URL original,
 Este sistema é composto por 2 funções AWS Lambda: 
 - a primeira é responsável por **gerar e armazenar** links encurtados em um AWS Bucket S3, juntamente com informações da URL original e o tempo de expiração; 
 - a segunda **gerencia o redirecionamento**, verificando o código da URL encurtada e validando o tempo de expiração
+<br>
+Projeto desenvolvido enquanto participante no Curso gratuíto de Java da **Rocketseat**, ministrado entre os dias 18 a 21 de Novembro de 2024.
