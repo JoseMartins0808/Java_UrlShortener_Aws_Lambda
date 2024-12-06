@@ -21,7 +21,15 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
     @Override
     public Map<String, String> handleRequest(Map<String, Object> input, Context context) {
 
+        System.out.println("INPUT: ");
+        System.out.println(input);
+
+        Main.verifyIsBodyRequestSentMiddleware(input);
+
         final String body = input.get("body").toString();
+
+        System.out.println("BODY: ");
+        System.out.println(body);
 
         Map <String, String> bodyMap;
 
@@ -29,37 +37,43 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
             bodyMap = objectMapper.readValue(body, Map.class);
 
-            System.out.println(bodyMap);
-
         }catch(Exception exception) {
 
             throw new RuntimeException("Error parsing JSON body: " + exception.getMessage(), exception);
         }
 
+        System.out.println("BODY_MAP: ");
+        System.out.println(bodyMap);
+
+        // Main.verifyRequestFieldsMiddleware(bodyMap);
+
         final String originalUrl = bodyMap.get("originalUrl");
         final String expirationTime = bodyMap.get("expirationTime");
+
+        System.out.println("OriginalUrl: " + originalUrl);
+        System.out.println("ExpirationTime: " + expirationTime);
+
         final String shortUrlCode = UUID.randomUUID().toString().substring(0, 8);
         final long expirationTimeInSeconds = Long.parseLong(expirationTime);
 
-        System.out.println("Tempo de expiração em segundos: " + expirationTime);
 
-        final UrlDto urlDto = new UrlDto(originalUrl, expirationTimeInSeconds);
+        // final UrlDto urlDto = new UrlDto(originalUrl, expirationTimeInSeconds);
 
-        try {
+        // try {
             
-            final String urlDtoToJson = objectMapper.writeValueAsString(urlDto);
+        //     final String urlDtoToJson = objectMapper.writeValueAsString(urlDto);
 
-            final PutObjectRequest request = PutObjectRequest.builder()
-                .bucket("nome-do-bucket")
-                .key(shortUrlCode + ".json")
-                .build();
+        //     final PutObjectRequest request = PutObjectRequest.builder()
+        //         .bucket("nome-do-bucket")
+        //         .key(shortUrlCode + ".json")
+        //         .build();
 
-            s3Client.putObject(request, RequestBody.fromString(urlDtoToJson));
+        //     s3Client.putObject(request, RequestBody.fromString(urlDtoToJson));
 
-        } catch (Exception exception) {
+        // } catch (Exception exception) {
             
-            throw new RuntimeException("Error saving URL data to S3: " + exception.getMessage(), exception);
-        }
+        //     throw new RuntimeException("Error saving URL data to S3: " + exception.getMessage(), exception);
+        // }
 
         final Map<String, String> response = new HashMap<String,String>();
         response.put("code", shortUrlCode);
@@ -67,4 +81,20 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
         return response;
     }
+
+    private static void verifyIsBodyRequestSentMiddleware(Map<String, Object> input) {
+
+        final Map<String, String> ErrorResponse = new HashMap<String,String>();
+
+        if(input.isEmpty()) {
+            ErrorResponse.put("message", "Body request must be sent.");
+        }
+    }
+
+    // private static void verifyRequestFieldsMiddleware(Map<String, String> bodyMap) {
+
+        
+        
+
+    // }
 }

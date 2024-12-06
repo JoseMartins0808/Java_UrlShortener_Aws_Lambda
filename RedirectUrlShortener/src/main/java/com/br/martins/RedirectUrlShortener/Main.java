@@ -1,11 +1,13 @@
 package com.br.martins.RedirectUrlShortener;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 public class Main implements RequestHandler<Map<String, Object>, Map<String, String>> {
 
@@ -20,6 +22,20 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
         if(urlCode == null || urlCode.isEmpty()) {
             throw new IllegalArgumentException("Invalid input: 'shortUrlCode is required.'");
         }
+
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket("nome-do-bucket")
+            .key(".json")
+            .build();
+
+        InputStream s3ObjectStream;
+
+        try {
+            s3ObjectStream = s3Client.getObject(getObjectRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching ULR data from s3 bucjet: " + e.getMessage(), e.getCause());
+        }
+
         return null;
     }
 }
