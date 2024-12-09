@@ -21,10 +21,21 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
     @Override
     public Map<String, String> handleRequest(Map<String, Object> input, Context context) {
 
-        System.out.println("INPUT: ");
+        System.out.println("INPUT:");
         System.out.println(input);
+        System.out.println("BODY:");
+        System.out.println(input.get("body"));
 
-        Main.verifyIsBodyRequestSentMiddleware(input);
+        try {
+            Main.verifyIsBodyRequestSentMiddleware(input);
+            System.out.println("TRYYYYY");
+        } 
+        catch (Exception exception) {
+            System.out.println("CATCHH");
+            final Map<String, String> errorMessage = new HashMap<String, String>();
+            errorMessage.put("message", "Body request must be sent.");
+            return errorMessage;       
+        }
 
         final String body = input.get("body").toString();
 
@@ -82,12 +93,14 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
         return response;
     }
 
-    private static void verifyIsBodyRequestSentMiddleware(Map<String, Object> input) {
+    private static void verifyIsBodyRequestSentMiddleware(Map<String, Object> input) throws RuntimeException {
 
-        final Map<String, String> ErrorResponse = new HashMap<String,String>();
-
-        if(input.isEmpty()) {
-            ErrorResponse.put("message", "Body request must be sent.");
+        if(input.equals(null)) {
+            System.out.println("NULOOOOO");
+            throw new RuntimeException("Body request must be sent.");
+        } else if (input.get("body").equals(null)) {
+            System.out.println("NULOOOOO 222");
+            throw new RuntimeException("Body request must be sent.");
         }
     }
 
