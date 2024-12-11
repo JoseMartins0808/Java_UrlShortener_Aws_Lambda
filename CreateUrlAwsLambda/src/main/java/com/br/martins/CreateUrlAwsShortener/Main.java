@@ -50,46 +50,47 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
         System.out.println("BODY_MAP: ");
         System.out.println(bodyMap);
 
-        if(bodyMap.get("expirationTime").equals(null) && bodyMap.get("originalUrl").equals(null)) {
+
+        final String originalUrl = bodyMap.get("originalUrl");
+        final String expirationTime = bodyMap.get("expirationTime");
+        System.out.println("OriginalUrl: " + originalUrl);
+        System.out.println("ExpirationTime: " + expirationTime);
+
+        if(originalUrl == null && expirationTime == null) {
             errorMessage.put("message", "Expiration Time and Original Url must be sent.");
             return errorMessage;
 
-        } else if(bodyMap.get("expirationTime").equals(null)) {
+        } else if(expirationTime == null || expirationTime.isBlank()) {
             errorMessage.put("message", "Expiration Time must be sent");
             return errorMessage;
             
-        } else if(bodyMap.get("originalUrl").equals(null)) {
+        } else if(originalUrl == null || originalUrl.isBlank()) {
             errorMessage.put("message", "Original Url must be sent");
             return errorMessage;
         }
 
-        final String originalUrl = bodyMap.get("originalUrl");
-        final String expirationTime = bodyMap.get("expirationTime");
-
-        System.out.println("OriginalUrl: " + originalUrl);
-        System.out.println("ExpirationTime: " + expirationTime);
-
         final String shortUrlCode = UUID.randomUUID().toString().substring(0, 8);
         final long expirationTimeInSeconds = Long.parseLong(expirationTime);
+        final String s3BucketName = System.getenv("BUCKET_S3_URL_SHORTENER");
+        System.out.println("BUCKET_NAME: " + System.getenv(s3BucketName));
 
+        final UrlDto urlDto = new UrlDto(originalUrl, expirationTimeInSeconds);
 
-        // final UrlDto urlDto = new UrlDto(originalUrl, expirationTimeInSeconds);
-
-        // try {
+        try {
             
-        //     final String urlDtoToJson = objectMapper.writeValueAsString(urlDto);
+            final String urlDtoToJson = objectMapper.writeValueAsString(urlDto);
 
-        //     final PutObjectRequest request = PutObjectRequest.builder()
-        //         .bucket("nome-do-bucket")
-        //         .key(shortUrlCode + ".json")
-        //         .build();
+            final PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(s3BucketName)
+                .key(shortUrlCode + ".json")
+                .build();
 
-        //     s3Client.putObject(request, RequestBody.fromString(urlDtoToJson));
+            s3Client.putObject(request, RequestBody.fromString(urlDtoToJson));
 
-        // } catch (Exception exception) {
+        } catch (Exception exception) {
             
-        //     throw new RuntimeException("Error saving URL data to S3: " + exception.getMessage(), exception);
-        // }
+            throw new RuntimeException("Error saving URL data to S3: " + exception.getMessage(), exception);
+        }
 
         String expirationTimeString = String.valueOf(expirationTimeInSeconds);
 
@@ -104,7 +105,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
     private static void verifyIsBodyRequestSentMiddleware(Map<String, Object> input) throws RuntimeException {
 
-        if(input.equals(null)) {
+        if(input.get("body").equals(null)) {
             throw new RuntimeException("Body request must be sent.");
         } 
     }
