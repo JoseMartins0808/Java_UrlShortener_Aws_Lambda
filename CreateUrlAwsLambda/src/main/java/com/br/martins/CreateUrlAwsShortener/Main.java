@@ -21,27 +21,21 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
     @Override
     public Map<String, String> handleRequest(Map<String, Object> input, Context context) {
 
-        System.out.println("INPUT:");
+        System.out.println("INPUT: ");
         System.out.println(input);
-        System.out.println("BODY:");
-        System.out.println(input.get("body"));
-
+        
+        Map<String, String> errorMessage = new HashMap<String, String>();
+        
         try {
             Main.verifyIsBodyRequestSentMiddleware(input);
-            System.out.println("TRYYYYY");
-        } 
-        catch (Exception exception) {
-            System.out.println("CATCHH");
-            final Map<String, String> errorMessage = new HashMap<String, String>();
+            
+        } catch (Exception exception) {
             errorMessage.put("message", "Body request must be sent.");
             return errorMessage;       
         }
-
+        
         final String body = input.get("body").toString();
-
-        System.out.println("BODY: ");
-        System.out.println(body);
-
+        
         Map <String, String> bodyMap;
 
         try{
@@ -56,7 +50,18 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
         System.out.println("BODY_MAP: ");
         System.out.println(bodyMap);
 
-        // Main.verifyRequestFieldsMiddleware(bodyMap);
+        if(bodyMap.get("expirationTime").equals(null) && bodyMap.get("originalUrl").equals(null)) {
+            errorMessage.put("message", "Expiration Time and Original Url must be sent.");
+            return errorMessage;
+
+        } else if(bodyMap.get("expirationTime").equals(null)) {
+            errorMessage.put("message", "Expiration Time must be sent");
+            return errorMessage;
+            
+        } else if(bodyMap.get("originalUrl").equals(null)) {
+            errorMessage.put("message", "Original Url must be sent");
+            return errorMessage;
+        }
 
         final String originalUrl = bodyMap.get("originalUrl");
         final String expirationTime = bodyMap.get("expirationTime");
@@ -86,8 +91,12 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
         //     throw new RuntimeException("Error saving URL data to S3: " + exception.getMessage(), exception);
         // }
 
+        String expirationTimeString = String.valueOf(expirationTimeInSeconds);
+
         final Map<String, String> response = new HashMap<String,String>();
         response.put("code", shortUrlCode);
+        response.put("OriginalUrl", originalUrl);
+        response.put("ExpirationTime", expirationTimeString);
 
 
         return response;
@@ -96,18 +105,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
     private static void verifyIsBodyRequestSentMiddleware(Map<String, Object> input) throws RuntimeException {
 
         if(input.equals(null)) {
-            System.out.println("NULOOOOO");
             throw new RuntimeException("Body request must be sent.");
-        } else if (input.get("body").equals(null)) {
-            System.out.println("NULOOOOO 222");
-            throw new RuntimeException("Body request must be sent.");
-        }
+        } 
     }
-
-    // private static void verifyRequestFieldsMiddleware(Map<String, String> bodyMap) {
-
-        
-        
-
-    // }
 }
