@@ -12,25 +12,25 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-public class Main implements RequestHandler<Map<String, Object>, Map<String, String>> {
+public class Main implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final S3Client s3Client = S3Client.builder().build();
 
     @Override
-    public Map<String, String> handleRequest(Map<String, Object> input, Context context) {
+    public Map<String, Object> handleRequest(Map<String, Object> input, Context context) {
 
-        System.out.println("INPUT: ");
-        System.out.println(input);
-        
-        Map<String, String> errorMessage = new HashMap<String, String>();
-        
+        Map<String, Object> errorMessage = new HashMap<String, Object>();
+
         try {
             Main.verifyIsBodyRequestSentMiddleware(input);
             
         } catch (Exception exception) {
-            errorMessage.put("message", "Body request must be sent.");
+            errorMessage.put("statusCode", 400);
+            Map<String, String> body = new HashMap<String, String>();
+            body.put("message", "Body request must be sent.");
+            errorMessage.put("body", body);
             return errorMessage;       
         }
         
@@ -47,25 +47,29 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
             throw new RuntimeException("Error parsing JSON body: " + exception.getMessage(), exception);
         }
 
-        System.out.println("BODY_MAP: ");
-        System.out.println(bodyMap);
-
-
         final String originalUrl = bodyMap.get("originalUrl");
         final String expirationTime = bodyMap.get("expirationTime");
-        System.out.println("OriginalUrl: " + originalUrl);
-        System.out.println("ExpirationTime: " + expirationTime);
 
         if(originalUrl == null && expirationTime == null) {
-            errorMessage.put("message", "Expiration Time and Original Url must be sent.");
+
+            Map<String, String> errorBody = new HashMap<String, String>();
+            errorBody.put("message", "Expiration Time and Original URL must be sent.");
+            errorMessage.put("statusCode", 400);
+            errorMessage.put("body", errorBody);
             return errorMessage;
 
         } else if(expirationTime == null || expirationTime.isBlank()) {
-            errorMessage.put("message", "Expiration Time must be sent");
+            Map<String, String> errorBody = new HashMap<String, String>();
+            errorBody.put("message", "Expiration Time must be sent");
+            errorMessage.put("statusCode", 400);
+            errorMessage.put("body", errorBody);
             return errorMessage;
             
         } else if(originalUrl == null || originalUrl.isBlank()) {
-            errorMessage.put("message", "Original Url must be sent");
+            Map<String, String> errorBody = new HashMap<String, String>();
+            errorBody.put("message", "Original URL must be sent.");
+            errorMessage.put("statusCode", 400);
+            errorMessage.put("body", errorBody);
             return errorMessage;
         }
 
@@ -94,11 +98,10 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
         String expirationTimeString = String.valueOf(expirationTimeInSeconds);
 
-        final Map<String, String> response = new HashMap<String,String>();
+        final Map<String, Object> response = new HashMap<String,Object>();
         response.put("code", shortUrlCode);
         response.put("OriginalUrl", originalUrl);
         response.put("ExpirationTime", expirationTimeString);
-
 
         return response;
     }

@@ -31,7 +31,11 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
 
             Map<String, Object> errorMessage = new HashMap<String, Object>();
             errorMessage.put("statusCode", "400");
-            errorMessage.put("body", "Invalid input: shortUrlCode is required.");
+
+            Map<String, String> body = new HashMap<String, String>();
+            body.put("message", "Short URL code is required");
+
+            errorMessage.put("body", body);
             return errorMessage;
         }
 
