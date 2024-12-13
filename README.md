@@ -14,14 +14,15 @@ Projeto desenvolvido enquanto participante no Curso gratuíto de Java da **Rocke
 Não encontrei uma forma para que a função AWS Lambda retornasse status 400 no caso de erro no envio do body de requisição, 
 portanto todos os erros retornam com status 200.
 
-* Link da Função Lambda: https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
+* Link da Função Geradora URL : https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
+* Link da Função Redirecionadora URL : https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
 
-| Método  | Endpoint             | Responsabilidade                                 | Acesso via token
-| ------- | -------------------- | ------------------------------------------------ | ------------------------ |
-| POST    | Link da Função       | Cria uma nova URL encurtada                      | Livre (sem token)        |
-| GET     | Link da Função       | Redireciona à URL original pela URL encurtada    | Livre (sem token)        |
+| Método  | Endpoint             			 | Responsabilidade                                 | Acesso via token		   |
+| ------- | -------------------------------- | ------------------------------------------------ | ------------------------ |
+| POST    | Link da Função Geradora URL      | Cria uma nova URL encurtada                      | Livre (sem token)        |
+| GET     | Link da Função Geradora URL      | Redireciona à URL original pela URL encurtada    | Livre (sem token)        |
 
-## Rota Post/Link da Função Lambda
+## Rota Post/Link da Função Lambda Geradora de URL
 Esta rota cria uma URL encurtada, ao fornecer a URL original e o tempo de expiração *em segundos, no formato String*.
 Não é enviado Token de **autenticação**. O corpo da requisição tem os seguites campos obrigatórios:
 
@@ -85,3 +86,9 @@ Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retorna
 	"message": "Original Url must be sent"
 }
 ```
+
+## Rota Post/Link da Função Lambda Redirecionadora de URL
+Esta rota recebe uma URL encurtada, juntamente com o tempo de expiração. Verifica-se se a URL encurtada não expirou em seu
+tempo útil, fornecendo assim a URL original para acesso pelo cliente.
+Não é enviado Token de **autenticação**. O corpo da requisição tem os seguites campos obrigatórios:
+
