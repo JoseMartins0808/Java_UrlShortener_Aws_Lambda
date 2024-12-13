@@ -1,32 +1,24 @@
 package com.br.martins.RedirectUrlShortener;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
-public class Main implements RequestHandler<Map<String, Object>, Map<String, String>> {
+public class Main implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
     private final S3Client s3Client = S3Client.builder().build();
 
-    public static Properties getProperties () throws IOException {
-        Properties properties = new Properties();
-        FileInputStream propertiesFile = new FileInputStream("/messages.properties");
-        properties.load(propertiesFile);
-        System.out.println(properties.getProperty("message.requiredShortUrl"));
-        return properties;
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    public Map<String, String> handleRequest(Map<String, Object> input, Context context) {
+     @Override
+    public Map<String, Object> handleRequest(Map<String, Object> input, Context context) {
         
         final String pathParameter = input.get("rawPath").toString(); 
         // em uma URL http://site.com/UUID, extrairá o seguinte: "/UUID"
@@ -34,29 +26,12 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
         System.out.println("URL CODE: ");
         System.out.println(urlCode);
-
-        Properties properties;
-
-        try {
-            properties = getProperties();
-        } catch (IOException e) {
-            System.out.println("PROPERTIES NOT FOUND!");
-            throw new RuntimeException("Error Reading Properties");
-        }
-
-        final String firstProperty = properties.getProperty("message.requiredShortUrl");
-        final String secondProperty = properties.getProperty("message.requiredShortUrl");
-
-        System.out.println("PRIMEIRA: ");
-        System.out.println(firstProperty);
-        System.out.println("SEGUNDA: ");
-        System.out.println(secondProperty);
-
-        Map<String, String> errorMessage = new HashMap<String, String>();
-
+        
         if(urlCode == null || urlCode.isBlank()) {
-            // throw new IllegalArgumentException("Invalid input: 'shortUrlCode is required.'");
-            errorMessage.put("message", "Invalid input: 'shortUrlCode is required.'");
+
+            Map<String, Object> errorMessage = new HashMap<String, Object>();
+            errorMessage.put("statusCode", "400");
+            errorMessage.put("body", "Invalid input: shortUrlCode is required.");
             return errorMessage;
         }
 
@@ -77,7 +52,30 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Str
 
         UrlDto urlDto;
 
+        try {
+            urlDto = objectMapper.readValue(s3ObjectStream, UrlDto.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Error deserializing data: " + e.getMessage(), e.getCause());
+        }
 
-        return null;
+        long currentTimeinSeconds = System.currentTimeMillis();
+
+        if(urlDto.getExpirationTime() < currentTimeinSeconds) {
+            
+            Map<String, Object> errorMessage = new HashMap<String, Object>();
+            errorMessage.put("statusCode", 410);
+            errorMessage.put("body", "This URL has expired");
+            return errorMessage;
+        }
+
+        Map<String, Object> response = new HashMap<String, Object>();
+        response.put("statusCode", 302);
+
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Location", urlDto.getOriginalUrl());
+
+        response.put("headers", headers);
+
+        return response;
     }
 }
