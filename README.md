@@ -10,17 +10,13 @@ Este sistema é composto por 2 funções AWS Lambda:
 <br>
 Projeto desenvolvido enquanto participante no Curso gratuíto de Java da **Rocketseat**, ministrado entre os dias 18 a 21 de Novembro de 2024.
 
-#Observações:
-Não encontrei uma forma para que a função AWS Lambda retornasse status 400 no caso de erro no envio do body de requisição, 
-portanto todos os erros retornam com status 200.
-
 * Link da Função Geradora URL : https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
 * Link da Função Redirecionadora URL : https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
 
 | Método  | Endpoint             			 | Responsabilidade                                 | Acesso via token		   |
 | ------- | -------------------------------- | ------------------------------------------------ | ------------------------ |
 | POST    | Link da Função Geradora URL      | Cria uma nova URL encurtada                      | Livre (sem token)        |
-| GET     | Link da Função Geradora URL      | Redireciona à URL original pela URL encurtada    | Livre (sem token)        |
+| POST    | Link da Função Redirecionadora/Código da URL Encurtada      | Redireciona à URL original pela URL encurtada    | Livre (sem token)        |
 
 ## Rota Post/Link da Função Lambda Geradora de URL
 Esta rota cria uma URL encurtada, ao fornecer a URL original e o tempo de expiração *em segundos, no formato String*.
@@ -53,7 +49,7 @@ Caso não seja enviado o corpo de requisição, retornará o seguinte **erro**:
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
 | Body: Formato Json                                       |
-| Status code: <b style="color:green">200 OK</b>           |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
 
 ```json
 {
@@ -66,7 +62,7 @@ Caso seja enviado o corpo de requisição **sem** a chave "expirationTime", reto
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
 | Body: Formato Json                                       |
-| Status code: <b style="color:green">200 OK</b>           |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
 
 ```json
 {
@@ -79,7 +75,7 @@ Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retorna
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
 | Body: Formato Json                                       |
-| Status code: <b style="color:green">200 OK</b>           |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
 
 ```json
 {
@@ -87,8 +83,38 @@ Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retorna
 }
 ```
 
-## Rota Post/Link da Função Lambda Redirecionadora de URL
-Esta rota recebe uma URL encurtada, juntamente com o tempo de expiração. Verifica-se se a URL encurtada não expirou em seu
-tempo útil, fornecendo assim a URL original para acesso pelo cliente.
-Não é enviado Token de **autenticação**. O corpo da requisição tem os seguites campos obrigatórios:
+## Rota Post/Link da Função Lambda Redirecionadora de URL/Código da URL Encurtada
+Esta rota recebe uma URL encurtada, que por meio de **querry param** desta URL encurtada se encontra o código
+para a URL original. Verifica-se por este código se a URL encurtada não expirou em seu tempo útil, 
+fornecendo assim a URL original para acesso pelo cliente.
+Não é enviado Token de **autenticação**. **Não** há corpo de requisição.
 
+| Dados de Envio:    						   |
+| -------------------------------------------- |
+| Body: null		 						   |
+| Endpoint: link da função lambda/URL encurtada|
+<br>
+<!-- | Resposta do servidor:                               |
+| --------------------------------------------------- |
+| Body: Formato Json                                  |
+| Status code: <b style="color:green">200 OK</b>      |
+
+```json
+{
+	"code": "123456"
+}
+``` 
+-->
+<br>
+Caso não seja enviado o código da URL encurtada, como query param, retornará o seguinte erro:
+
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Body: Formato Json                                       |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
+
+```json
+{
+	"message": "Short URL code is required"
+}
+```
