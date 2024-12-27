@@ -17,7 +17,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-     @Override
+    @Override
     public Map<String, Object> handleRequest(Map<String, Object> input, Context context) {
 
         final String pathParameter = input.get("rawPath").toString(); 

@@ -3,6 +3,8 @@ package com.br.martins.CreateUrlAwsShortener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -28,12 +30,14 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             
         } catch (Exception exception) {
             Map<String, String> body = new HashMap<String, String>();
+
             try {
                 body.put("message", "Body request must be sent.");
                 final String bodyResponse = objectMapper.writeValueAsString(body);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
                 return response;
+
             } catch (Exception e) {
                 throw new RuntimeException("Error serializing value as String: " + e.getMessage());
             }
@@ -44,11 +48,9 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
         Map <String, String> bodyMap;
 
         try{
-
             bodyMap = objectMapper.readValue(body, Map.class);
 
         }catch(Exception exception) {
-
             throw new RuntimeException("Error parsing JSON body: " + exception.getMessage(), exception);
         }
 
@@ -56,29 +58,29 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
         final String expirationTime = bodyMap.get("expirationTime");
 
         if(originalUrl == null && expirationTime == null) {
-
             Map<String, String> errorBody = new HashMap<String, String>();
+
             try {
                 errorBody.put("message", "Expiration Time and Original Url must be sent");
                 final String bodyResponse = objectMapper.writeValueAsString(errorBody);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
                 return response;
+
             } catch (Exception e) {
                 throw new RuntimeException("Error serializing value as String: " + e.getMessage());
             }
 
         } else if(expirationTime == null || expirationTime.isBlank()) {
             Map<String, String> errorBody = new HashMap<String, String>();
-            // errorBody.put("message", "Expiration Time must be sent");
-            // errorMessage.put("statusCode", 400);
-            // errorMessage.put("body", errorBody);
+
             try {
                 errorBody.put("message", "Expiration Time must be sent");
                 final String bodyResponse = objectMapper.writeValueAsString(errorBody);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
                 return response;
+
             } catch (Exception e) {
                 throw new RuntimeException("Error serializing value as String: " + e.getMessage());
             }
@@ -92,20 +94,40 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
                 return response;
+
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializing value as String: " + e.getMessage());
+            }
+        }
+
+        // Pattern pattern = Pattern.compile("Inserir o REGEX aqui");
+        // Matcher match = pattern.matcher(originalUrl);
+
+        // if(!match.matches()) {
+        //     mensagem de erro: "Original Url must be a valid URL.";
+        // }
+
+        final long expirationTimeInSeconds = Long.parseLong(expirationTime);
+        final long currentTimeinSeconds = System.currentTimeMillis()/1000;
+        System.out.println("CURRENT TIME: " + currentTimeinSeconds);
+
+        if(expirationTimeInSeconds < currentTimeinSeconds) {
+            Map<String, String> errorBody = new HashMap<String, String>();
+
+            try {
+                errorBody.put("message", "Expiration Time must be after Current Time: " + currentTimeinSeconds);
+                final String bodyResponse = objectMapper.writeValueAsString(errorBody);
+                response.put("body", bodyResponse);
+                response.put("statusCode", 400);
+                return response;
+
             } catch (Exception e) {
                 throw new RuntimeException("Error serializing value as String: " + e.getMessage());
             }
         }
 
         final String shortUrlCode = UUID.randomUUID().toString().substring(0, 8);
-        final long expirationTimeInSeconds = Long.parseLong(expirationTime);
         final String s3BucketName = System.getenv("BUCKET_S3_URL_SHORTENER");
-
-        // adicionar lógica para verificar se o expirationTime é menor que o currentTime
-        // adicionar lógica para verificar se o expirationTime é menor que o currentTime
-        // adicionar lógica para verificar se o expirationTime é menor que o currentTime
-        // adicionar lógica para verificar se o expirationTime é menor que o currentTime
-        // adicionar lógica para verificar se o expirationTime é menor que o currentTime
 
         final UrlDto urlDto = new UrlDto(originalUrl, expirationTimeInSeconds);
 
@@ -132,8 +154,8 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             final String bodyResponse = objectMapper.writeValueAsString(successBody);
             response.put("body", bodyResponse);
             response.put("statusCode", 200);
-            System.out.println("DEU CERTO!");
             return response;
+
         } catch (Exception e) {
             throw new RuntimeException("Error serializing value as String: " + e.getMessage());
         }
