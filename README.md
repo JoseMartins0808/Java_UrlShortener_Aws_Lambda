@@ -10,7 +10,7 @@ Este sistema é composto por 2 funções AWS Lambda:
 <br>
 Projeto desenvolvido enquanto participante no Curso gratuíto de Java da **Rocketseat**, ministrado entre os dias 18 a 21 de Novembro de 2024.
 
-* Link da Função Geradora URL : https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
+* Link da Função Geradora URL : https://qkthphbzyf.execute-api.us-east-1.amazonaws.com/prod/create
 * Link da Função Redirecionadora URL : https://oqyi3z4vjzq7kxc4duiqcdkgaq0zjdux.lambda-url.us-east-1.on.aws/
 
 | Método  | Endpoint             			 | Responsabilidade                                 | Acesso via token		   |
@@ -28,8 +28,8 @@ Não é enviado Token de **autenticação**. O corpo da requisição tem os segu
 
 ```json
 {
-	"expirationTime": "1000",
-	"originalUrl": "https://www.linkedin.com/in/jose-martins0808/"
+	"originalUrl": "https://www.linkedin.com/in/jose-martins0808/",
+	"expirationTime": "1735350935"
 }
 ```
 
@@ -40,7 +40,7 @@ Não é enviado Token de **autenticação**. O corpo da requisição tem os segu
 
 ```json
 {
-	"code": "123456"
+	"code": "e3b29fa7"
 }
 ```
 
@@ -53,7 +53,20 @@ Caso não seja enviado o corpo de requisição, retornará o seguinte **erro**:
 
 ```json
 {
-	"message": "Body request must be sent."
+	"message": "Body request must be sent"
+}
+```
+
+Caso seja enviado o corpo de requisição **sem** a chave "expirationTime" **nem** a chave "originalUrl", retornará o seguinte erro:
+
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Body: Formato Json                                       |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
+
+```json
+{
+	"message": "Expiration Time and Original Url must be sent"
 }
 ```
 
@@ -80,6 +93,32 @@ Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retorna
 ```json
 {
 	"message": "Original Url must be sent"
+}
+```
+
+Caso seja enviado uma **url inválida** no campo "originalUrl", retornará o seguinte erro:
+
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Body: Formato Json                                       |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
+
+```json
+{
+	"message": "Oiginal Url must be a valid URL"
+}
+```
+
+Caso seja enviado um timestamp **inferior** ao timestamp do momento da requisição, retornará o seguinte erro:
+
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Body: Formato Json                                       |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
+
+```json
+{
+	"message": "Expiration Time must be after Current Time: 1735351533"
 }
 ```
 

@@ -32,7 +32,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             Map<String, String> body = new HashMap<String, String>();
 
             try {
-                body.put("message", "Body request must be sent.");
+                body.put("message", "Body request must be sent");
                 final String bodyResponse = objectMapper.writeValueAsString(body);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
@@ -89,7 +89,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             Map<String, String> errorBody = new HashMap<String, String>();
 
             try {
-                errorBody.put("message", "Original Url must be sent.");
+                errorBody.put("message", "Original Url must be sent");
                 final String bodyResponse = objectMapper.writeValueAsString(errorBody);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
@@ -108,7 +108,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             Map<String, String> errorBody = new HashMap<String, String>();
 
             try {
-                errorBody.put("message", "Oiginal Url must be a valid URL.");
+                errorBody.put("message", "Oiginal Url must be a valid URL");
                 final String bodyResponse = objectMapper.writeValueAsString(errorBody);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
