@@ -89,7 +89,7 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             Map<String, String> errorBody = new HashMap<String, String>();
 
             try {
-                errorBody.put("message", "Original URL must be sent.");
+                errorBody.put("message", "Original Url must be sent.");
                 final String bodyResponse = objectMapper.writeValueAsString(errorBody);
                 response.put("body", bodyResponse);
                 response.put("statusCode", 400);
@@ -100,12 +100,24 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             }
         }
 
-        // Pattern pattern = Pattern.compile("Inserir o REGEX aqui");
-        // Matcher match = pattern.matcher(originalUrl);
+        Pattern pattern = Pattern.compile("[(http(s)?):\\/\\/(www\\.)?a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)");
+        Matcher match = pattern.matcher(originalUrl);
 
-        // if(!match.matches()) {
-        //     mensagem de erro: "Original Url must be a valid URL.";
-        // }
+        if(!match.matches()) {
+            
+            Map<String, String> errorBody = new HashMap<String, String>();
+
+            try {
+                errorBody.put("message", "Oiginal Url must be a valid URL.");
+                final String bodyResponse = objectMapper.writeValueAsString(errorBody);
+                response.put("body", bodyResponse);
+                response.put("statusCode", 400);
+                return response;
+
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializing value as String: " + e.getMessage());
+            }
+        }
 
         final long expirationTimeInSeconds = Long.parseLong(expirationTime);
         final long currentTimeinSeconds = System.currentTimeMillis()/1000;
