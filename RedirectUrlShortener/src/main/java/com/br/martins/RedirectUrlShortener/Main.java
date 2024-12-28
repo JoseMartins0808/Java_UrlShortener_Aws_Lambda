@@ -21,18 +21,25 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
     public Map<String, Object> handleRequest(Map<String, Object> input, Context context) {
 
         final String pathParameter = input.get("rawPath").toString(); 
+        System.out.println("PATH: " + pathParameter);
         final String urlCode = pathParameter.replace("/", "");
+        System.out.println("URL CODE: " + urlCode);
+        Map<String, Object> response = new HashMap<String, Object>();
 
-        if(urlCode == null || urlCode.isBlank()) {
 
-            Map<String, Object> errorMessage = new HashMap<String, Object>();
-            errorMessage.put("statusCode", "400");
-
+        if(urlCode == null || urlCode.isBlank() || urlCode == "") {
             Map<String, String> body = new HashMap<String, String>();
-            body.put("message", "Short URL code is required");
 
-            errorMessage.put("body", body);
-            return errorMessage;
+            try {
+                body.put("message", "Short URL code is required");
+                final String bodyResponse = objectMapper.writeValueAsString(body);
+                response.put("body", bodyResponse);
+                response.put("statusCode", 400);
+                return response;
+
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializing value as String: " + e.getMessage());
+            }
         }
 
         final String s3BucketName = System.getenv("BUCKET_S3_URL_SHORTENER");
@@ -47,13 +54,18 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
         try {
             s3ObjectStream = s3Client.getObject(getObjectRequest);
         } catch (Exception e) {
-            // fazer uma mensagem de erro aqui!
-            // fazer uma mensagem de erro aqui!
-            // fazer uma mensagem de erro aqui!
-            // fazer uma mensagem de erro aqui!
-            // fazer uma mensagem de erro aqui!
-            // fazer uma mensagem de erro aqui!
-            throw new RuntimeException("Error fetching ULR data from s3 bucket: " + e.getMessage(), e.getCause());
+            Map<String, String> body = new HashMap<String, String>();
+
+            try {
+                body.put("message", "Short Url not found");
+                final String bodyResponse = objectMapper.writeValueAsString(body);
+                response.put("body", bodyResponse);
+                response.put("statusCode", 400);
+                return response;
+
+            } catch (Exception exception) {
+                throw new RuntimeException("Error serializing value as String: " + exception.getMessage());
+            }
         }
 
         UrlDto urlDto;
@@ -81,12 +93,9 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
             return errorMessage;
         }
 
-        Map<String, Object> response = new HashMap<String, Object>();
         response.put("statusCode", 302);
-
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Location", urlDto.getOriginalUrl());
-
         response.put("headers", headers);
 
         return response;
