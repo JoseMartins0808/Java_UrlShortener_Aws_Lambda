@@ -84,13 +84,21 @@ public class Main implements RequestHandler<Map<String, Object>, Map<String, Obj
         System.out.println(currentTimeinSeconds);
 
         if(urlDto.getExpirationTime() < currentTimeinSeconds) {
+
+            Map<String, String> body = new HashMap<String, String>();
+
+            try {
+                body.put("message", "");
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
             
-            Map<String, Object> errorMessage = new HashMap<String, Object>();
-            errorMessage.put("statusCode", 410);
-            Map<String, String> errorBody = new HashMap<String, String>();
-            errorBody.put("message", "This URL has expired");
-            errorMessage.put("body", errorBody);
-            return errorMessage;
+            // Map<String, Object> errorMessage = new HashMap<String, Object>();
+            // errorMessage.put("statusCode", 410);
+            // Map<String, String> errorBody = new HashMap<String, String>();
+            // errorBody.put("message", "This URL has expired");
+            // errorMessage.put("body", errorBody);
+            // return errorMessage;
         }
 
         response.put("statusCode", 302);

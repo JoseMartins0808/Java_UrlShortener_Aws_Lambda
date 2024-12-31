@@ -57,7 +57,7 @@ Caso não seja enviado o corpo de requisição, retornará o seguinte **erro**:
 }
 ```
 
-Caso seja enviado o corpo de requisição **sem** a chave "expirationTime" **nem** a chave "originalUrl", retornará o seguinte erro:
+Caso seja enviado o corpo de requisição **sem** a chave "expirationTime" **nem** a chave "originalUrl", retornará o seguinte **erro**:
 
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
@@ -70,7 +70,7 @@ Caso seja enviado o corpo de requisição **sem** a chave "expirationTime" **nem
 }
 ```
 
-Caso seja enviado o corpo de requisição **sem** a chave "expirationTime", retornará o seguinte erro:
+Caso seja enviado o corpo de requisição **sem** a chave "expirationTime", retornará o seguinte **erro**:
 
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
@@ -83,7 +83,7 @@ Caso seja enviado o corpo de requisição **sem** a chave "expirationTime", reto
 }
 ```
 
-Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retornará o seguinte erro:
+Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retornará o seguinte **erro**:
 
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
@@ -96,7 +96,7 @@ Caso seja enviado o corpo de requisição **sem** a chave "originalUrl", retorna
 }
 ```
 
-Caso seja enviado uma **url inválida** no campo "originalUrl", retornará o seguinte erro:
+Caso seja enviado uma **url inválida** no campo "originalUrl", retornará o seguinte **erro**:
 
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
@@ -109,7 +109,7 @@ Caso seja enviado uma **url inválida** no campo "originalUrl", retornará o seg
 }
 ```
 
-Caso seja enviado um timestamp **inferior** ao timestamp do momento da requisição, retornará o seguinte erro:
+Caso seja enviado um timestamp **inferior** ao timestamp do momento da requisição, retornará o seguinte **erro**:
 
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
@@ -123,7 +123,7 @@ Caso seja enviado um timestamp **inferior** ao timestamp do momento da requisiç
 ```
 
 ## Rota Post/Link da Função Lambda Redirecionadora de URL/Código da URL Encurtada
-Esta rota recebe uma URL encurtada, que por meio de **querry param** desta URL encurtada se encontra o código
+Esta rota recebe uma URL encurtada por meio de **querry param**, no qual se encontra o código
 para a URL original. Verifica-se por este código se a URL encurtada não expirou em seu tempo útil, 
 fornecendo assim a URL original para acesso pelo cliente.
 Não é enviado Token de **autenticação**. **Não** há corpo de requisição.
@@ -132,20 +132,14 @@ Não é enviado Token de **autenticação**. **Não** há corpo de requisição.
 | -------------------------------------------- |
 | Body: null		 						   |
 | Endpoint: link da função lambda/URL encurtada|
-<br>
-<!-- | Resposta do servidor:                               |
-| --------------------------------------------------- |
-| Body: Formato Json                                  |
-| Status code: <b style="color:green">200 OK</b>      |
 
-```json
-{
-	"code": "123456"
-}
-``` 
--->
-<br>
-Caso não seja enviado o código da URL encurtada, como query param, retornará o seguinte erro:
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Redirecionamento: para a URL original					   |
+| Body: null					                           |
+| Status code: <b style="color:green">200 OK</b> 		   |
+
+Caso **não seja enviado o código** da URL encurtada, como query param, retornará o seguinte **erro**:
 
 | Resposta do servidor:                                    |
 | -------------------------------------------------------- |
@@ -157,3 +151,30 @@ Caso não seja enviado o código da URL encurtada, como query param, retornará 
 	"message": "Short URL code is required"
 }
 ```
+
+Caso seja enviada um código **inexistente** de URL, retornará o seguinte **erro**:
+
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Body: Formato Json                                       |
+| Status code: <b style="color:orange">400 BAD REQUEST</b> |
+
+```json
+{
+	"message": "Short Url not found"
+}
+```
+
+Caso seja enviado um código da URL encurtada, que **já esteja expirada**, retornará o seguinte **erro**:
+
+| Resposta do servidor:                                    |
+| -------------------------------------------------------- |
+| Body: Formato Json                                       |
+| Status code: <b style="color:orange">410 GONE</b> 	   |
+
+```json
+{
+	"message": "This URL has expired"
+}
+```
+
