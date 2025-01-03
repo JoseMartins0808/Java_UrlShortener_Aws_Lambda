@@ -125,7 +125,9 @@ Caso seja enviado um timestamp **inferior** ao timestamp do momento da requisiç
 	"message": "Expiration Time must be after Current Time: 1735351533"
 }
 ```
+
 <br>
+
 ## Rota Post/Link da Função Lambda Redirecionadora de URL/Código da URL Encurtada
 Esta rota recebe uma URL encurtada por meio de **querry param**, no qual se encontra o código
 para a URL original. Verifica-se por este código se a URL encurtada não expirou em seu tempo útil, 
